@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FilmGenre {
+  horror
+  fantastic
+  romance
+  comedy
+  melodramma
+  action
+
+  @@map("film_genres")
+}
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullname  String   @map("fullname") @db.VarChar(32)
+  email     String   @unique @map("email")
+  password  String   @map("password")
+  createdAt DateTime @default(now()) @map("created_at")
+  verified  Boolean  @default(false) @map("verified")
+  role      Role     @default(USER)
+
+  @@map("user")
+}
+
+model Film {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String    @map("title") @db.VarChar(32)
+  description String    @map("description") @db.VarChar(255)
+  link        String    @map("link")
+  year        String    @map("year") @db.VarChar(4)
+  duration    String    @map("duration") @db.VarChar(10)
+  genre       FilmGenre @map("genre")
+  deletedAt   DateTime? @map("deleted_at")
+  views       Int       @default(0)
+
+  @@map("film")
+}
+
+model View {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  filmId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@unique([userId, filmId])
+  @@map("view")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
